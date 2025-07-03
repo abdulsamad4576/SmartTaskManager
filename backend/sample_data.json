@@ -1,0 +1,30 @@
+{
+  "categories": [
+    { "name": "Work" },
+    { "name": "Personal" },
+    { "name": "Learning" }
+  ],
+  "tasks": [
+    {
+      "title": "Finish project report",
+      "description": "Complete the final report for the project.",
+      "deadline": "2024-07-10T17:00:00.000Z",
+      "completed": false,
+      "category": "Work"
+    },
+    {
+      "title": "Buy groceries",
+      "description": "Milk, Bread, Eggs, Fruits",
+      "deadline": "2024-07-04T18:00:00.000Z",
+      "completed": false,
+      "category": "Personal"
+    },
+    {
+      "title": "Read React docs",
+      "description": "Go through the official React documentation.",
+      "deadline": "2024-07-15T20:00:00.000Z",
+      "completed": false,
+      "category": "Learning"
+    }
+  ]
+} 
