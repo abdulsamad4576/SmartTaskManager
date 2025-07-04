@@ -30,6 +30,7 @@ function App() {
   const [authMode, setAuthMode] = useState('login'); // or 'register'
   const [authError, setAuthError] = useState('');
   const [user, setUser] = useState(localStorage.getItem('user'));
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   // Fetch categories
   const fetchCategories = async () => {
@@ -54,10 +55,10 @@ function App() {
       const res = await login(creds);
       localStorage.setItem('token', res.data.token);
       setToken(res.data.token);
-      // Decode username from JWT payload (simple base64 decode)
       const payload = JSON.parse(atob(res.data.token.split('.')[1]));
       setUser(payload.username);
       localStorage.setItem('user', payload.username);
+      setIsAuthChecking(false);
     } catch (err) {
       setAuthError(err.response?.data?.message || 'Login failed');
     }
@@ -77,19 +78,33 @@ function App() {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    setIsAuthChecking(false);
+  };
+
+  // Helper to handle 401 errors
+  const handleApiError = (err) => {
+    if (err.response && err.response.status === 401) {
+      handleLogout();
+    }
   };
 
   // Only fetch data if authenticated
   useEffect(() => {
     if (token) {
-      fetchCategories();
-      fetchTasks();
+      setIsAuthChecking(false);
+      fetchCategories().catch(handleApiError);
+      fetchTasks().catch(handleApiError);
+    } else {
+      setIsAuthChecking(false);
     }
+    // eslint-disable-next-line
   }, [token]);
 
   useEffect(() => {
-    fetchTasks(filterCategory);
-  }, [filterCategory]);
+    if (token) {
+      fetchTasks(filterCategory).catch(handleApiError);
+    }
+  }, [filterCategory, token]);
 
   // Periodically check for tasks with deadlines within 30 minutes
   useEffect(() => {
@@ -161,6 +176,9 @@ function App() {
 
   const handleCloseReminder = () => setReminderTask(null);
 
+  if (isAuthChecking) {
+    return <div style={{ textAlign: 'center', marginTop: 80 }}><b>Loading...</b></div>;
+  }
   if (!token) {
     return authMode === 'login' ? (
       <>
