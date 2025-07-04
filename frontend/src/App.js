@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   getTasks,
   addTask,
@@ -11,6 +11,7 @@ import {
 import TaskList from './components/TaskList';
 import TaskForm from './components/TaskForm';
 import CategoryFilter from './components/CategoryFilter';
+import ReminderModal from './components/ReminderModal';
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -19,6 +20,8 @@ function App() {
   const [editingTask, setEditingTask] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [reminderTask, setReminderTask] = useState(null);
+  const notifiedTaskIdsRef = useRef(new Set());
 
   // Fetch categories
   const fetchCategories = async () => {
@@ -44,6 +47,32 @@ function App() {
   useEffect(() => {
     fetchTasks(filterCategory);
   }, [filterCategory]);
+
+  // Periodically check for tasks with deadlines within 30 minutes
+  useEffect(() => {
+    const checkDeadlines = () => {
+      if (reminderTask) return; // Only show one reminder at a time
+      const now = new Date();
+      const in30Min = new Date(now.getTime() + 30 * 60 * 1000);
+      for (const task of tasks) {
+        if (
+          task.deadline &&
+          !task.completed &&
+          !notifiedTaskIdsRef.current.has(task._id)
+        ) {
+          const deadline = new Date(task.deadline);
+          if (deadline > now && deadline <= in30Min) {
+            setReminderTask(task);
+            notifiedTaskIdsRef.current.add(task._id);
+            break;
+          }
+        }
+      }
+    };
+    checkDeadlines();
+    const interval = setInterval(checkDeadlines, 60 * 1000);
+    return () => clearInterval(interval);
+  }, [tasks, reminderTask]);
 
   // Add or update task
   const handleSaveTask = async (taskData) => {
@@ -87,6 +116,8 @@ function App() {
     setEditingTask(null);
   };
 
+  const handleCloseReminder = () => setReminderTask(null);
+
   return (
     <div style={{ maxWidth: 600, margin: '40px auto', padding: 24, background: '#fafafa', borderRadius: 12, boxShadow: '0 2px 8px #eee' }}>
       <h1>Smart Task Manager</h1>
@@ -112,6 +143,7 @@ function App() {
           onComplete={handleCompleteTask}
         />
       )}
+      <ReminderModal task={reminderTask} onClose={handleCloseReminder} />
     </div>
   );
 }
