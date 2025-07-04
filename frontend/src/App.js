@@ -6,12 +6,16 @@ import {
   deleteTask,
   completeTask,
   getCategories,
-  addCategory
+  addCategory,
+  login,
+  register
 } from './api/api';
 import TaskList from './components/TaskList';
 import TaskForm from './components/TaskForm';
 import CategoryFilter from './components/CategoryFilter';
 import ReminderModal from './components/ReminderModal';
+import LoginForm from './components/LoginForm';
+import RegisterForm from './components/RegisterForm';
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -22,6 +26,10 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [reminderTask, setReminderTask] = useState(null);
   const notifiedTaskIdsRef = useRef(new Set());
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [authMode, setAuthMode] = useState('login'); // or 'register'
+  const [authError, setAuthError] = useState('');
+  const [user, setUser] = useState(localStorage.getItem('user'));
 
   // Fetch categories
   const fetchCategories = async () => {
@@ -39,10 +47,45 @@ function App() {
     setLoading(false);
   };
 
+  // Auth handlers
+  const handleLogin = async (creds) => {
+    setAuthError('');
+    try {
+      const res = await login(creds);
+      localStorage.setItem('token', res.data.token);
+      setToken(res.data.token);
+      // Decode username from JWT payload (simple base64 decode)
+      const payload = JSON.parse(atob(res.data.token.split('.')[1]));
+      setUser(payload.username);
+      localStorage.setItem('user', payload.username);
+    } catch (err) {
+      setAuthError(err.response?.data?.message || 'Login failed');
+    }
+  };
+  const handleRegister = async (creds) => {
+    setAuthError('');
+    try {
+      await register(creds);
+      setAuthMode('login');
+      setAuthError('Registration successful! Please log in.');
+    } catch (err) {
+      setAuthError(err.response?.data?.message || 'Registration failed');
+    }
+  };
+  const handleLogout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  };
+
+  // Only fetch data if authenticated
   useEffect(() => {
-    fetchCategories();
-    fetchTasks();
-  }, []);
+    if (token) {
+      fetchCategories();
+      fetchTasks();
+    }
+  }, [token]);
 
   useEffect(() => {
     fetchTasks(filterCategory);
@@ -118,9 +161,35 @@ function App() {
 
   const handleCloseReminder = () => setReminderTask(null);
 
+  if (!token) {
+    return authMode === 'login' ? (
+      <>
+        <LoginForm onLogin={handleLogin} error={authError} />
+        <div style={{ textAlign: 'center', marginTop: 12 }}>
+          <span>Don't have an account? </span>
+          <button onClick={() => { setAuthMode('register'); setAuthError(''); }} style={{ border: 'none', background: 'none', color: '#007bff', cursor: 'pointer' }}>Register</button>
+        </div>
+      </>
+    ) : (
+      <>
+        <RegisterForm onRegister={handleRegister} error={authError} />
+        <div style={{ textAlign: 'center', marginTop: 12 }}>
+          <span>Already have an account? </span>
+          <button onClick={() => { setAuthMode('login'); setAuthError(''); }} style={{ border: 'none', background: 'none', color: '#007bff', cursor: 'pointer' }}>Login</button>
+        </div>
+      </>
+    );
+  }
+
   return (
     <div style={{ maxWidth: 600, margin: '40px auto', padding: 24, background: '#fafafa', borderRadius: 12, boxShadow: '0 2px 8px #eee' }}>
-      <h1>Smart Task Manager</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1>Smart Task Manager</h1>
+        <div>
+          <span style={{ marginRight: 12 }}>Hello, {user}</span>
+          <button onClick={handleLogout}>Logout</button>
+        </div>
+      </div>
       <CategoryFilter
         categories={categories}
         value={filterCategory}
