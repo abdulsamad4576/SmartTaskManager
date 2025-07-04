@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import {
   getTasks,
   addTask,
@@ -16,6 +17,8 @@ import CategoryFilter from './components/CategoryFilter';
 import ReminderModal from './components/ReminderModal';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
+import MainLayout from './components/MainLayout';
+import './styles/App.css';
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -25,12 +28,13 @@ function App() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [reminderTask, setReminderTask] = useState(null);
-  const notifiedTaskIdsRef = useRef(new Set());
   const [token, setToken] = useState(localStorage.getItem('token'));
-  const [authMode, setAuthMode] = useState('login'); // or 'register'
+  const [authMode, setAuthMode] = useState('login');
   const [authError, setAuthError] = useState('');
   const [user, setUser] = useState(localStorage.getItem('user'));
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const notifiedTaskIdsRef = useRef(new Set());
 
   // Fetch categories
   const fetchCategories = async () => {
@@ -59,26 +63,31 @@ function App() {
       setUser(payload.username);
       localStorage.setItem('user', payload.username);
       setIsAuthChecking(false);
+      setSnackbar({ open: true, message: 'Login successful!', severity: 'success' });
     } catch (err) {
       setAuthError(err.response?.data?.message || 'Login failed');
     }
   };
+
   const handleRegister = async (creds) => {
     setAuthError('');
     try {
       await register(creds);
       setAuthMode('login');
       setAuthError('Registration successful! Please log in.');
+      setSnackbar({ open: true, message: 'Registration successful! Please log in.', severity: 'success' });
     } catch (err) {
       setAuthError(err.response?.data?.message || 'Registration failed');
     }
   };
+
   const handleLogout = () => {
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsAuthChecking(false);
+    setSnackbar({ open: true, message: 'Logged out successfully', severity: 'info' });
   };
 
   // Helper to handle 401 errors
@@ -97,7 +106,6 @@ function App() {
     } else {
       setIsAuthChecking(false);
     }
-    // eslint-disable-next-line
   }, [token]);
 
   useEffect(() => {
@@ -109,7 +117,7 @@ function App() {
   // Periodically check for tasks with deadlines within 30 minutes
   useEffect(() => {
     const checkDeadlines = () => {
-      if (reminderTask) return; // Only show one reminder at a time
+      if (reminderTask) return;
       const now = new Date();
       const in30Min = new Date(now.getTime() + 30 * 60 * 1000);
       for (const task of tasks) {
@@ -134,20 +142,31 @@ function App() {
 
   // Add or update task
   const handleSaveTask = async (taskData) => {
-    if (editingTask) {
-      await updateTask(editingTask._id, taskData);
-    } else {
-      await addTask(taskData);
+    try {
+      if (editingTask) {
+        await updateTask(editingTask._id, taskData);
+        setSnackbar({ open: true, message: 'Task updated successfully!', severity: 'success' });
+      } else {
+        await addTask(taskData);
+        setSnackbar({ open: true, message: 'Task created successfully!', severity: 'success' });
+      }
+      setShowForm(false);
+      setEditingTask(null);
+      fetchTasks(filterCategory);
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Failed to save task', severity: 'error' });
     }
-    setShowForm(false);
-    setEditingTask(null);
-    fetchTasks(filterCategory);
   };
 
   // Delete task
   const handleDeleteTask = async (id) => {
-    await deleteTask(id);
-    fetchTasks(filterCategory);
+    try {
+      await deleteTask(id);
+      setSnackbar({ open: true, message: 'Task deleted successfully!', severity: 'success' });
+      fetchTasks(filterCategory);
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Failed to delete task', severity: 'error' });
+    }
   };
 
   // Edit task
@@ -158,8 +177,13 @@ function App() {
 
   // Mark as completed
   const handleCompleteTask = async (id) => {
-    await completeTask(id);
-    fetchTasks(filterCategory);
+    try {
+      await completeTask(id);
+      setSnackbar({ open: true, message: 'Task completed!', severity: 'success' });
+      fetchTasks(filterCategory);
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Failed to complete task', severity: 'error' });
+    }
   };
 
   // Add new task
@@ -176,62 +200,109 @@ function App() {
 
   const handleCloseReminder = () => setReminderTask(null);
 
+  const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
+
+  // Loading state
   if (isAuthChecking) {
-    return <div style={{ textAlign: 'center', marginTop: 80 }}><b>Loading...</b></div>;
-  }
-  if (!token) {
-    return authMode === 'login' ? (
-      <>
-        <LoginForm onLogin={handleLogin} error={authError} />
-        <div style={{ textAlign: 'center', marginTop: 12 }}>
-          <span>Don't have an account? </span>
-          <button onClick={() => { setAuthMode('register'); setAuthError(''); }} style={{ border: 'none', background: 'none', color: '#007bff', cursor: 'pointer' }}>Register</button>
-        </div>
-      </>
-    ) : (
-      <>
-        <RegisterForm onRegister={handleRegister} error={authError} />
-        <div style={{ textAlign: 'center', marginTop: 12 }}>
-          <span>Already have an account? </span>
-          <button onClick={() => { setAuthMode('login'); setAuthError(''); }} style={{ border: 'none', background: 'none', color: '#007bff', cursor: 'pointer' }}>Login</button>
-        </div>
-      </>
+    return (
+      <div className="loading-container" style={{ minHeight: '100vh' }}>
+        <div className="loading-spinner"></div>
+      </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: '40px auto', padding: 24, background: '#fafafa', borderRadius: 12, boxShadow: '0 2px 8px #eee' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Smart Task Manager</h1>
-        <div>
-          <span style={{ marginRight: 12 }}>Hello, {user}</span>
-          <button onClick={handleLogout}>Logout</button>
-        </div>
-      </div>
-      <CategoryFilter
-        categories={categories}
-        value={filterCategory}
-        onChange={setFilterCategory}
-      />
-      <button onClick={handleAddTask} style={{ marginBottom: 16 }}>Add Task</button>
-      {showForm && (
-        <TaskForm
-          onSubmit={handleSaveTask}
-          categories={categories}
-          initialData={editingTask}
-          onCancel={handleCancelForm}
+    <Router>
+      <Routes>
+        {/* Auth routes */}
+        <Route
+          path="/login"
+          element={
+            !token ? (
+              <LoginForm onLogin={handleLogin} error={authError} />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
         />
-      )}
-      {loading ? <p>Loading...</p> : (
-        <TaskList
-          tasks={tasks}
-          onEdit={handleEditTask}
-          onDelete={handleDeleteTask}
-          onComplete={handleCompleteTask}
+        <Route
+          path="/register"
+          element={
+            !token ? (
+              <RegisterForm onRegister={handleRegister} error={authError} />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
         />
-      )}
+
+        {/* Protected main app route */}
+        <Route
+          path="/"
+          element={
+            token ? (
+              <MainLayout
+                user={user}
+                onLogout={handleLogout}
+                tasks={tasks}
+                categories={categories}
+                filterCategory={filterCategory}
+                setFilterCategory={setFilterCategory}
+                loading={loading}
+                showForm={showForm}
+                editingTask={editingTask}
+                onAddTask={handleAddTask}
+                onSaveTask={handleSaveTask}
+                onCancelForm={handleCancelForm}
+                onEditTask={handleEditTask}
+                onDeleteTask={handleDeleteTask}
+                onCompleteTask={handleCompleteTask}
+              />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        {/* Catch all route - redirect to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      {/* Reminder Modal */}
       <ReminderModal task={reminderTask} onClose={handleCloseReminder} />
-    </div>
+
+      {/* Snackbar for notifications */}
+      {snackbar.open && (
+        <div 
+          className={`snackbar snackbar-${snackbar.severity}`}
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            color: 'white',
+            zIndex: 1001,
+            animation: 'slideUp 0.3s ease'
+          }}
+        >
+          {snackbar.message}
+          <button 
+            onClick={handleCloseSnackbar}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'white',
+              marginLeft: '12px',
+              cursor: 'pointer',
+              fontSize: '18px'
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+    </Router>
   );
 }
 
