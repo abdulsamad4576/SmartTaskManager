@@ -44,7 +44,7 @@ A modern, full-stack task management application built with React and Node.js, f
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/abdulsamad4576/smart-task-manager.git
+   git clone https://github.com/abdulsamad4576/SmartTaskManager.git
    cd smart-task-manager
    ```
 
