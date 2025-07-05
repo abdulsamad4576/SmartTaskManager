@@ -33,7 +33,6 @@ function App() {
   const [authError, setAuthError] = useState('');
   const [user, setUser] = useState(localStorage.getItem('user'));
   const [isAuthChecking, setIsAuthChecking] = useState(true);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const notifiedTaskIdsRef = useRef(new Set());
 
   // Fetch categories
@@ -63,7 +62,6 @@ function App() {
       setUser(payload.username);
       localStorage.setItem('user', payload.username);
       setIsAuthChecking(false);
-      setSnackbar({ open: true, message: 'Login successful!', severity: 'success' });
     } catch (err) {
       setAuthError(err.response?.data?.message || 'Login failed');
     }
@@ -75,7 +73,6 @@ function App() {
       await register(creds);
       setAuthMode('login');
       setAuthError('Registration successful! Please log in.');
-      setSnackbar({ open: true, message: 'Registration successful! Please log in.', severity: 'success' });
     } catch (err) {
       setAuthError(err.response?.data?.message || 'Registration failed');
     }
@@ -87,7 +84,6 @@ function App() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsAuthChecking(false);
-    setSnackbar({ open: true, message: 'Logged out successfully', severity: 'info' });
   };
 
   // Helper to handle 401 errors
@@ -145,16 +141,14 @@ function App() {
     try {
       if (editingTask) {
         await updateTask(editingTask._id, taskData);
-        setSnackbar({ open: true, message: 'Task updated successfully!', severity: 'success' });
       } else {
         await addTask(taskData);
-        setSnackbar({ open: true, message: 'Task created successfully!', severity: 'success' });
       }
       setShowForm(false);
       setEditingTask(null);
       fetchTasks(filterCategory);
     } catch (err) {
-      setSnackbar({ open: true, message: 'Failed to save task', severity: 'error' });
+      console.error('Failed to save task:', err);
     }
   };
 
@@ -162,10 +156,9 @@ function App() {
   const handleDeleteTask = async (id) => {
     try {
       await deleteTask(id);
-      setSnackbar({ open: true, message: 'Task deleted successfully!', severity: 'success' });
       fetchTasks(filterCategory);
     } catch (err) {
-      setSnackbar({ open: true, message: 'Failed to delete task', severity: 'error' });
+      console.error('Failed to delete task:', err);
     }
   };
 
@@ -175,14 +168,13 @@ function App() {
     setShowForm(true);
   };
 
-  // Mark as completed
-  const handleCompleteTask = async (id) => {
+  // Mark as completed/uncompleted
+  const handleToggleTask = async (id) => {
     try {
       await completeTask(id);
-      setSnackbar({ open: true, message: 'Task completed!', severity: 'success' });
       fetchTasks(filterCategory);
     } catch (err) {
-      setSnackbar({ open: true, message: 'Failed to complete task', severity: 'error' });
+      console.error('Failed to update task status:', err);
     }
   };
 
@@ -199,8 +191,6 @@ function App() {
   };
 
   const handleCloseReminder = () => setReminderTask(null);
-
-  const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
 
   // Loading state
   if (isAuthChecking) {
@@ -256,7 +246,7 @@ function App() {
                 onCancelForm={handleCancelForm}
                 onEditTask={handleEditTask}
                 onDeleteTask={handleDeleteTask}
-                onCompleteTask={handleCompleteTask}
+                onCompleteTask={handleToggleTask}
               />
             ) : (
               <Navigate to="/login" replace />
@@ -270,38 +260,6 @@ function App() {
 
       {/* Reminder Modal */}
       <ReminderModal task={reminderTask} onClose={handleCloseReminder} />
-
-      {/* Snackbar for notifications */}
-      {snackbar.open && (
-        <div 
-          className={`snackbar snackbar-${snackbar.severity}`}
-          style={{
-            position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            padding: '12px 24px',
-            borderRadius: '8px',
-            color: 'white',
-            zIndex: 1001,
-            animation: 'slideUp 0.3s ease'
-          }}
-        >
-          {snackbar.message}
-          <button 
-            onClick={handleCloseSnackbar}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'white',
-              marginLeft: '12px',
-              cursor: 'pointer',
-              fontSize: '18px'
-            }}
-          >
-            ×
-          </button>
-        </div>
-      )}
     </Router>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Person as PersonIcon, Lock as LockIcon } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 import '../styles/App.css';
 
 export default function RegisterForm({ onRegister, error }) {
@@ -73,6 +74,13 @@ export default function RegisterForm({ onRegister, error }) {
             Create Account
           </button>
         </form>
+
+        <div className="auth-switch">
+          <span>Already have an account? </span>
+          <Link to="/login" style={{ color: '#667eea', textDecoration: 'underline', fontWeight: '500' }}>
+            Sign In
+          </Link>
+        </div>
       </div>
     </div>
   );

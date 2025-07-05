@@ -1,4 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  Close as CloseIcon, 
+  Save as SaveIcon,
+  Title as TitleIcon,
+  Description as DescriptionIcon,
+  Schedule as ScheduleIcon,
+  Category as CategoryIcon
+} from '@mui/icons-material';
+import '../styles/App.css';
 
 const TaskForm = ({ onSubmit, categories, initialData = {}, onCancel }) => {
   const [title, setTitle] = useState(initialData?.title || '');
@@ -20,38 +29,114 @@ const TaskForm = ({ onSubmit, categories, initialData = {}, onCancel }) => {
     onSubmit({ title, description, deadline, category });
   };
 
+  const isEditing = !!initialData?._id;
+
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: 24 }}>
-      <input
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={e => setTitle(e.target.value)}
-        required
-        style={{ marginRight: 8 }}
-      />
-      <input
-        type="text"
-        placeholder="Description"
-        value={description}
-        onChange={e => setDescription(e.target.value)}
-        style={{ marginRight: 8 }}
-      />
-      <input
-        type="datetime-local"
-        value={deadline}
-        onChange={e => setDeadline(e.target.value)}
-        style={{ marginRight: 8 }}
-      />
-      <select value={category} onChange={e => setCategory(e.target.value)} style={{ marginRight: 8 }}>
-        <option value="">Select Category</option>
-        {categories.map(cat => (
-          <option key={cat._id} value={cat.name}>{cat.name}</option>
-        ))}
-      </select>
-      <button type="submit">Save</button>
-      {onCancel && <button type="button" onClick={onCancel} style={{ marginLeft: 8 }}>Cancel</button>}
-    </form>
+    <div className="modal-overlay task-form-overlay" onClick={onCancel}>
+      <div className="modal-content task-form-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header task-form-header">
+          <div className="modal-title">
+            <div className="title-icon">
+              <TitleIcon />
+            </div>
+            <div>
+              <h3>{isEditing ? 'Edit Task' : 'Create New Task'}</h3>
+              <p className="modal-subtitle">
+                {isEditing ? 'Update your task details below' : 'Fill in the details to create a new task'}
+              </p>
+            </div>
+          </div>
+          <button className="modal-close" onClick={onCancel} title="Close">
+            <CloseIcon />
+          </button>
+        </div>
+        
+        <div className="modal-body task-form-body">
+          <form className="task-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label">
+                <TitleIcon fontSize="small" />
+                Task Title *
+              </label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Enter a descriptive title for your task"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                <DescriptionIcon fontSize="small" />
+                Description
+              </label>
+              <textarea
+                className="form-textarea"
+                placeholder="Add more details about your task (optional)"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                rows="4"
+              />
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">
+                  <ScheduleIcon fontSize="small" />
+                  Deadline
+                </label>
+                <input
+                  type="datetime-local"
+                  className="form-input"
+                  value={deadline}
+                  onChange={e => setDeadline(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  <CategoryIcon fontSize="small" />
+                  Category
+                </label>
+                <select 
+                  className="form-select" 
+                  value={category} 
+                  onChange={e => setCategory(e.target.value)}
+                >
+                  <option value="">Select a category</option>
+                  {categories.map(cat => (
+                    <option key={cat._id} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+        
+        <div className="modal-footer task-form-footer">
+          <button 
+            className="form-button secondary" 
+            onClick={onCancel}
+            type="button"
+          >
+            Cancel
+          </button>
+          <button 
+            className="form-button primary" 
+            onClick={handleSubmit}
+            disabled={!title.trim()}
+            type="submit"
+          >
+            <SaveIcon fontSize="small" />
+            {isEditing ? 'Update Task' : 'Create Task'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

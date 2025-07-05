@@ -102,14 +102,27 @@ router.delete('/:id', async (req, res) => {
 // PATCH /tasks/:id/complete
 router.patch('/:id/complete', async (req, res) => {
   try {
+    console.log('Complete task request for ID:', req.params.id);
+    const currentTask = await Task.findOne({ _id: req.params.id, user: req.user.userId });
+    if (!currentTask) {
+      console.log('Task not found');
+      return res.status(404).json({ message: 'Task not found.' });
+    }
+    
+    console.log('Current task completed status:', currentTask.completed);
+    const newCompletedStatus = !currentTask.completed;
+    console.log('New completed status:', newCompletedStatus);
+    
     const task = await Task.findOneAndUpdate(
       { _id: req.params.id, user: req.user.userId },
-      { completed: true },
+      { completed: newCompletedStatus },
       { new: true }
-    );
-    if (!task) return res.status(404).json({ message: 'Task not found.' });
+    ).populate('category');
+    
+    console.log('Updated task:', task);
     res.json(task);
   } catch (err) {
+    console.error('Error in complete task route:', err);
     res.status(500).json({ message: 'Server error.' });
   }
 });

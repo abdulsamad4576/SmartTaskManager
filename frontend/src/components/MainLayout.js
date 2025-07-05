@@ -50,6 +50,14 @@ export default function MainLayout({
             />
           </div>
 
+          {/* Add Task Button */}
+          <div className="add-task-section">
+            <button className="add-task-button" onClick={onAddTask}>
+              <AddIcon />
+              <span>Add New Task</span>
+            </button>
+          </div>
+
           {/* Task List */}
           <div>
             {loading ? (
@@ -61,15 +69,10 @@ export default function MainLayout({
                 tasks={tasks}
                 onEdit={onEditTask}
                 onDelete={onDeleteTask}
-                onComplete={onCompleteTask}
+                onCompleteTask={onCompleteTask}
               />
             )}
           </div>
-
-          {/* Floating Action Button for Add Task */}
-          <button className="fab" onClick={onAddTask} aria-label="add task">
-            <AddIcon />
-          </button>
         </div>
       </main>
 
