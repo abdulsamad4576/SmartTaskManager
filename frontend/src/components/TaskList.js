@@ -14,10 +14,16 @@ import '../styles/App.css';
 const formatDeadline = (deadline) => {
   if (!deadline) return 'No deadline';
   
-  const date = new Date(deadline);
+  const deadlineDate = new Date(deadline);
   const now = new Date();
-  const diffTime = date.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Create date objects for comparison (without time)
+  const deadlineDay = new Date(deadlineDate.getFullYear(), deadlineDate.getMonth(), deadlineDate.getDate());
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  // Calculate difference in days
+  const diffTime = deadlineDay.getTime() - today.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
   
   const options = {
     day: 'numeric',
@@ -28,7 +34,7 @@ const formatDeadline = (deadline) => {
     hour12: true
   };
   
-  const formattedDate = date.toLocaleDateString('en-US', options);
+  const formattedDate = deadlineDate.toLocaleDateString('en-US', options);
   
   // Add relative time indicator
   let relativeTime = '';
@@ -42,8 +48,10 @@ const formatDeadline = (deadline) => {
     relativeTime = ` (In ${diffDays} days)`;
   } else if (diffDays < -1 && diffDays >= -7) {
     relativeTime = ` (${Math.abs(diffDays)} days ago)`;
-  } else if (diffDays < 0) {
-    relativeTime = ' (Overdue)';
+  } else if (diffDays > 7) {
+    relativeTime = ` (In ${diffDays} days)`;
+  } else if (diffDays < -7) {
+    relativeTime = ` (${Math.abs(diffDays)} days ago)`;
   }
   
   return formattedDate + relativeTime;

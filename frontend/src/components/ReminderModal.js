@@ -28,12 +28,12 @@ export default function ReminderModal({ task, onClose }) {
           </div>
           
           <div>
-            <h4 style={{ marginBottom: '12px', color: '#333' }}>
+            <h4 style={{ marginBottom: '12px', color: '#D0D0D0' }}>
               {task.title}
             </h4>
             
             {task.description && (
-              <p style={{ color: '#666', marginBottom: '16px', lineHeight: '1.5' }}>
+              <p style={{ color: '#B0B0B0', marginBottom: '16px', lineHeight: '1.5' }}>
                 {task.description}
               </p>
             )}
@@ -48,19 +48,7 @@ export default function ReminderModal({ task, onClose }) {
         <div className="modal-footer">
           <button 
             onClick={onClose} 
-            style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              border: 'none',
-              padding: '12px 24px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: '500',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseOver={e => e.target.style.transform = 'translateY(-2px)'}
-            onMouseOut={e => e.target.style.transform = 'translateY(0)'}
+            className="form-button primary"
           >
             Got it!
           </button>
