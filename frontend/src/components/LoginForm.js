@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Person as PersonIcon, Lock as LockIcon } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import '../styles/App.css';
 
-export default function LoginForm({ onLogin, error }) {
+export default function LoginForm({ onLogin, error, onClearError }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  // Clear any existing error when component mounts
+  useEffect(() => {
+    if (onClearError) {
+      onClearError();
+    }
+  }, []);
 
   const handleSubmit = e => {
     e.preventDefault();

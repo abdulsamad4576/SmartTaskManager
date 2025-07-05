@@ -250,7 +250,11 @@ function App() {
           path="/login"
           element={
             !token ? (
-              <LoginForm onLogin={handleLogin} error={authError} />
+              <LoginForm 
+                onLogin={handleLogin} 
+                error={authError} 
+                onClearError={() => setAuthError('')}
+              />
             ) : (
               <Navigate to="/" replace />
             )
@@ -260,7 +264,11 @@ function App() {
           path="/register"
           element={
             !token ? (
-              <RegisterForm onRegister={handleRegister} error={authError} />
+              <RegisterForm 
+                onRegister={handleRegister} 
+                error={authError} 
+                onClearError={() => setAuthError('')}
+              />
             ) : (
               <Navigate to="/" replace />
             )
