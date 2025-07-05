@@ -112,10 +112,15 @@ function App() {
 
   // Periodically check for tasks with deadlines within 30 minutes
   useEffect(() => {
+    // Only run deadline checks if user is authenticated and has tasks
+    if (!token || !user || tasks.length === 0) return;
+
     const checkDeadlines = () => {
       if (reminderTask) return;
+      
       const now = new Date();
       const in30Min = new Date(now.getTime() + 30 * 60 * 1000);
+      
       for (const task of tasks) {
         if (
           task.deadline &&
@@ -131,10 +136,11 @@ function App() {
         }
       }
     };
+
     checkDeadlines();
     const interval = setInterval(checkDeadlines, 60 * 1000);
     return () => clearInterval(interval);
-  }, [tasks, reminderTask]);
+  }, [tasks, reminderTask, token, user]);
 
   // Add or update task
   const handleSaveTask = async (taskData) => {
