@@ -33,6 +33,8 @@ function App() {
   const [authError, setAuthError] = useState('');
   const [user, setUser] = useState(localStorage.getItem('user'));
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [sortByDeadline, setSortByDeadline] = useState('none'); // 'none', 'asc', 'desc'
+  const [completionFilter, setCompletionFilter] = useState('all'); // 'all', 'completed', 'incomplete'
   const notifiedTaskIdsRef = useRef(new Set());
 
   // Fetch categories
@@ -112,15 +114,10 @@ function App() {
 
   // Periodically check for tasks with deadlines within 30 minutes
   useEffect(() => {
-    // Only run deadline checks if user is authenticated and has tasks
-    if (!token || !user || tasks.length === 0) return;
-
     const checkDeadlines = () => {
       if (reminderTask) return;
-      
       const now = new Date();
       const in30Min = new Date(now.getTime() + 30 * 60 * 1000);
-      
       for (const task of tasks) {
         if (
           task.deadline &&
@@ -136,11 +133,10 @@ function App() {
         }
       }
     };
-
     checkDeadlines();
     const interval = setInterval(checkDeadlines, 60 * 1000);
     return () => clearInterval(interval);
-  }, [tasks, reminderTask, token, user]);
+  }, [tasks, reminderTask]);
 
   // Add or update task
   const handleSaveTask = async (taskData) => {
@@ -198,6 +194,45 @@ function App() {
 
   const handleCloseReminder = () => setReminderTask(null);
 
+  // Sort tasks by deadline
+  const handleSortByDeadline = () => {
+    const nextSort = sortByDeadline === 'none' ? 'asc' : sortByDeadline === 'asc' ? 'desc' : 'none';
+    setSortByDeadline(nextSort);
+  };
+
+  // Filter tasks by completion status
+  const handleCompletionFilter = () => {
+    const nextFilter = completionFilter === 'all' ? 'incomplete' : completionFilter === 'incomplete' ? 'completed' : 'all';
+    setCompletionFilter(nextFilter);
+  };
+
+  // Get sorted and filtered tasks
+  const getSortedTasks = () => {
+    let filteredTasks = tasks;
+    
+    // Apply completion filter
+    if (completionFilter === 'completed') {
+      filteredTasks = tasks.filter(task => task.completed);
+    } else if (completionFilter === 'incomplete') {
+      filteredTasks = tasks.filter(task => !task.completed);
+    }
+    
+    // Apply sorting
+    if (sortByDeadline === 'none') return filteredTasks;
+    
+    return [...filteredTasks].sort((a, b) => {
+      // Tasks without deadlines go to the end
+      if (!a.deadline && !b.deadline) return 0;
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      
+      const dateA = new Date(a.deadline);
+      const dateB = new Date(b.deadline);
+      
+      return sortByDeadline === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+  };
+
   // Loading state
   if (isAuthChecking) {
     return (
@@ -240,7 +275,7 @@ function App() {
               <MainLayout
                 user={user}
                 onLogout={handleLogout}
-                tasks={tasks}
+                tasks={getSortedTasks()}
                 categories={categories}
                 filterCategory={filterCategory}
                 setFilterCategory={setFilterCategory}
@@ -253,6 +288,10 @@ function App() {
                 onEditTask={handleEditTask}
                 onDeleteTask={handleDeleteTask}
                 onCompleteTask={handleToggleTask}
+                sortByDeadline={sortByDeadline}
+                onSortByDeadline={handleSortByDeadline}
+                completionFilter={completionFilter}
+                onCompletionFilter={handleCompletionFilter}
               />
             ) : (
               <Navigate to="/login" replace />

@@ -10,6 +10,45 @@ import {
 } from '@mui/icons-material';
 import '../styles/App.css';
 
+// Utility function to format deadline dates
+const formatDeadline = (deadline) => {
+  if (!deadline) return 'No deadline';
+  
+  const date = new Date(deadline);
+  const now = new Date();
+  const diffTime = date.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  const options = {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  };
+  
+  const formattedDate = date.toLocaleDateString('en-US', options);
+  
+  // Add relative time indicator
+  let relativeTime = '';
+  if (diffDays === 0) {
+    relativeTime = ' (Today)';
+  } else if (diffDays === 1) {
+    relativeTime = ' (Tomorrow)';
+  } else if (diffDays === -1) {
+    relativeTime = ' (Yesterday)';
+  } else if (diffDays > 1 && diffDays <= 7) {
+    relativeTime = ` (In ${diffDays} days)`;
+  } else if (diffDays < -1 && diffDays >= -7) {
+    relativeTime = ` (${Math.abs(diffDays)} days ago)`;
+  } else if (diffDays < 0) {
+    relativeTime = ' (Overdue)';
+  }
+  
+  return formattedDate + relativeTime;
+};
+
 const TaskList = ({ tasks, onEdit, onDelete, onCompleteTask }) => {
   if (!tasks.length) {
     return (
@@ -18,7 +57,7 @@ const TaskList = ({ tasks, onEdit, onDelete, onCompleteTask }) => {
         <h3 className="empty-state-title">Ready to get productive?</h3>
         <p className="empty-state-text">
           Start by creating your first task and take control of your day!
-          Click the "Add Task" button above to begin your journey to better productivity.
+          Click the "Add New Task" button above to begin your journey to better productivity.
         </p>
       </div>
     );
@@ -45,8 +84,8 @@ const TaskList = ({ tasks, onEdit, onDelete, onCompleteTask }) => {
           <div className="task-meta">
             <div className="task-deadline">
               <ScheduleIcon fontSize="small" />
-              <span>
-                {task.deadline ? new Date(task.deadline).toLocaleString() : 'No deadline'}
+              <span className={task.deadline && new Date(task.deadline) < new Date() && !task.completed ? 'overdue' : ''}>
+                {formatDeadline(task.deadline)}
               </span>
             </div>
             

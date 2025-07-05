@@ -1,5 +1,5 @@
 import React from 'react';
-import { Logout as LogoutIcon, Add as AddIcon } from '@mui/icons-material';
+import { Logout as LogoutIcon, Add as AddIcon, Sort as SortIcon, FilterList as FilterIcon } from '@mui/icons-material';
 import TaskList from './TaskList';
 import TaskForm from './TaskForm';
 import CategoryFilter from './CategoryFilter';
@@ -20,7 +20,11 @@ export default function MainLayout({
   onCancelForm,
   onEditTask,
   onDeleteTask,
-  onCompleteTask
+  onCompleteTask,
+  sortByDeadline,
+  onSortByDeadline,
+  completionFilter,
+  onCompletionFilter
 }) {
   return (
     <div className="app-container">
@@ -50,12 +54,48 @@ export default function MainLayout({
             />
           </div>
 
-          {/* Add Task Button */}
+          {/* Add Task and Sort Section */}
           <div className="add-task-section">
-            <button className="add-task-button" onClick={onAddTask}>
-              <AddIcon />
-              <span>Add New Task</span>
-            </button>
+            <div className="task-controls">
+              <button className="add-task-button" onClick={onAddTask}>
+                <AddIcon />
+                <span>Add New Task</span>
+              </button>
+              
+              <button 
+                className={`sort-button ${sortByDeadline !== 'none' ? 'active' : ''}`}
+                onClick={onSortByDeadline}
+                title={`Sort by deadline: ${sortByDeadline === 'none' ? 'Click to sort' : sortByDeadline === 'asc' ? 'Earliest first' : 'Latest first'}`}
+              >
+                <SortIcon />
+                <span>
+                  {sortByDeadline === 'none' ? 'Sort by Deadline' : 
+                   sortByDeadline === 'asc' ? 'Earliest First' : 'Latest First'}
+                </span>
+                {sortByDeadline !== 'none' && (
+                  <span className="sort-indicator">
+                    {sortByDeadline === 'asc' ? '↑' : '↓'}
+                  </span>
+                )}
+              </button>
+
+              <button 
+                className={`filter-button ${completionFilter !== 'all' ? 'active' : ''}`}
+                onClick={onCompletionFilter}
+                title={`Filter by completion: ${completionFilter === 'all' ? 'Show all tasks' : completionFilter === 'completed' ? 'Showing completed' : 'Showing incomplete'}`}
+              >
+                <FilterIcon />
+                <span>
+                  {completionFilter === 'all' ? 'All Tasks' : 
+                   completionFilter === 'completed' ? 'Completed Only' : 'Incomplete Only'}
+                </span>
+                {completionFilter !== 'all' && (
+                  <span className="filter-indicator">
+                    {completionFilter === 'completed' ? '✓' : '○'}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Task List */}
