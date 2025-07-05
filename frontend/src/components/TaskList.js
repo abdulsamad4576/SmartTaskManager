@@ -14,9 +14,12 @@ const TaskList = ({ tasks, onEdit, onDelete, onCompleteTask }) => {
   if (!tasks.length) {
     return (
       <div className="empty-state">
-        <div className="empty-state-icon">📝</div>
-        <h3 className="empty-state-title">No tasks yet</h3>
-        <p className="empty-state-text">Create your first task to get started!</p>
+        <div className="empty-state-icon">🎯</div>
+        <h3 className="empty-state-title">Ready to get productive?</h3>
+        <p className="empty-state-text">
+          Start by creating your first task and take control of your day!
+          Click the "Add Task" button above to begin your journey to better productivity.
+        </p>
       </div>
     );
   }

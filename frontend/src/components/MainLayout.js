@@ -29,7 +29,7 @@ export default function MainLayout({
         <div className="app-header-content">
           <h1 className="app-title">Smart Task Manager</h1>
           <div className="user-section">
-            <span className="user-greeting">Hello, {user}</span>
+            <span className="user-greeting">Welcome back, {user}! 👋</span>
             <button className="logout-button" onClick={onLogout}>
               <LogoutIcon fontSize="small" />
               Logout
@@ -63,6 +63,9 @@ export default function MainLayout({
             {loading ? (
               <div className="loading-container">
                 <div className="loading-spinner"></div>
+                <p style={{ marginTop: '16px', color: 'var(--text-muted)', fontSize: '14px' }}>
+                  Loading your tasks...
+                </p>
               </div>
             ) : (
               <TaskList
