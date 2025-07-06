@@ -26,6 +26,20 @@ A modern, full-stack task management application built with React and Node.js, f
 - JWT authentication for secure user sessions
 - RESTful API architecture
 
+## 🏗️ Architecture
+
+The Smart Task Manager follows a modern three-tier architecture with clear separation of concerns:
+
+![Architecture Diagram](docs/images/architecture-diagram.png)
+
+The system is built with:
+- **Frontend**: React.js SPA with component-based architecture
+- **Backend**: Node.js/Express RESTful API with JWT authentication
+- **Database**: MongoDB with Mongoose ODM for data persistence
+- **Security**: Multi-layered approach with token-based authentication
+
+For detailed architecture documentation, see [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## 📋 Key Achievements
 
 • **Enhanced user productivity by 40%** through implementation of advanced sorting, filtering, and deadline management features across 5+ task categories
