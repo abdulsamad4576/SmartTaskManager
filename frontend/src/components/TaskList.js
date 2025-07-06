@@ -14,16 +14,24 @@ import '../styles/App.css';
 const formatDeadline = (deadline) => {
   if (!deadline) return 'No deadline';
   
-  const deadlineDate = new Date(deadline);
+  // Parse the deadline as local time instead of UTC to avoid timezone shifts
+  // Remove the 'Z' or UTC indicator if present and treat as local time
+  const deadlineStr = deadline.replace('Z', '').replace(/\.\d{3}$/, '');
+  const deadlineDate = new Date(deadlineStr);
+  
+  console.log('Debug - Original:', deadline, 'Parsed as local:', deadlineDate);
+  
   const now = new Date();
   
-  // Create date objects for comparison (without time)
+  // Create date objects for comparison using local dates (without time)
   const deadlineDay = new Date(deadlineDate.getFullYear(), deadlineDate.getMonth(), deadlineDate.getDate());
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  
+
   // Calculate difference in days
   const diffTime = deadlineDay.getTime() - today.getTime();
   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  
+  console.log('Debug - Days difference:', diffDays, 'Deadline day:', deadlineDay, 'Today:', today);
   
   const options = {
     day: 'numeric',
@@ -34,6 +42,7 @@ const formatDeadline = (deadline) => {
     hour12: true
   };
   
+  // Format date in local timezone
   const formattedDate = deadlineDate.toLocaleDateString('en-US', options);
   
   // Add relative time indicator
