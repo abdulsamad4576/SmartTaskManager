@@ -38,7 +38,6 @@ The system is built with:
 - **Database**: MongoDB with Mongoose ODM for data persistence
 - **Security**: Multi-layered approach with token-based authentication
 
-For detailed architecture documentation, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## 📋 Key Achievements
 
@@ -118,10 +117,6 @@ The application features a modern dark theme with:
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👨‍💻 Developer
 
