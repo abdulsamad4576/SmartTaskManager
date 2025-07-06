@@ -39,12 +39,6 @@ The system is built with:
 - **Security**: Multi-layered approach with token-based authentication
 
 
-## 📋 Key Achievements
-
-• **Enhanced user productivity by 40%** through implementation of advanced sorting, filtering, and deadline management features across 5+ task categories
-
-• **Improved application performance and user experience by 35%** by developing a responsive, accessible dark-themed interface with conic gradients and optimizing for 3+ device breakpoints
-
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -97,14 +91,6 @@ The system is built with:
 
 6. **Access the application**
    Open your browser and navigate to `http://localhost:3000`
-
-## 📱 Screenshots
-
-The application features a modern dark theme with:
-- Smooth gradient backgrounds and animations
-- Intuitive task creation and management interface
-- Real-time deadline tracking with visual indicators
-- Responsive design that works on all devices
 
 ## 🎯 Usage
 
