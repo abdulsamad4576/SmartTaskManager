@@ -1,8 +1,25 @@
 import axios from 'axios';
 
+const API_BASE_URL = 'https://smart-task-manager-backend-3du9.onrender.com/'; 
+// const API_BASE_URL = 'localhost:5000'; // Keep localhost for development
+
+
 const api = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL: API_BASE_URL,
 });
+
+
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 
 // Task APIs
 export const getTasks = (params) => api.get('/tasks', { params });
