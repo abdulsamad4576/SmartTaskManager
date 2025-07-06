@@ -115,28 +115,42 @@ function App() {
   // Periodically check for tasks with deadlines within 30 minutes
   useEffect(() => {
     const checkDeadlines = () => {
-      if (reminderTask) return;
       const now = new Date();
       const in30Min = new Date(now.getTime() + 30 * 60 * 1000);
-      for (const task of tasks) {
-        if (
-          task.deadline &&
-          !task.completed &&
-          !notifiedTaskIdsRef.current.has(task._id)
-        ) {
-          const deadline = new Date(task.deadline);
-          if (deadline > now && deadline <= in30Min) {
-            setReminderTask(task);
-            notifiedTaskIdsRef.current.add(task._id);
-            break;
+      
+      // Only check for new reminders if no reminder is currently showing
+      if (!reminderTask) {
+        for (const task of tasks) {
+          if (
+            task.deadline &&
+            !task.completed &&
+            !notifiedTaskIdsRef.current.has(task._id)
+          ) {
+            const deadline = new Date(task.deadline);
+            console.log('Debug - Original:', task.deadline, 'Parsed as local:', deadline);
+            const deadlineStr = deadline.toISOString().replace('Z', '').replace(/\.\d{3}$/, '');
+            //const deadline = new Date(deadlineStr);
+            const deadlineFinal = new Date(deadlineStr);
+            console.log('Debug - Deadline string:', deadlineStr);
+            if (deadlineFinal > now && deadlineFinal <= in30Min) {
+              setReminderTask(task);
+              notifiedTaskIdsRef.current.add(task._id);
+              break;
+            }
           }
         }
       }
     };
+    
+    // Initial check
     checkDeadlines();
-    const interval = setInterval(checkDeadlines, 60 * 1000);
+    
+    // Set up interval for periodic checks
+    const interval = setInterval(checkDeadlines, 60 * 1000); // Check every minute
+    
+    // Clean up interval
     return () => clearInterval(interval);
-  }, [tasks, reminderTask]);
+  }, [tasks]); // Only depend on tasks changing
 
   // Add or update task
   const handleSaveTask = async (taskData) => {
